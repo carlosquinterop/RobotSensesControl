@@ -22,6 +22,7 @@
 #include <QDirIterator>
 #include <QtSerialPort/QSerialPort>
 #include <QMessageBox>
+#include <QTimer>
 
 #define NUMBER_OF_BUTTONS 12
 
@@ -41,9 +42,9 @@ private:
     QString buttonTexts[NUMBER_OF_BUTTONS], speechProcessName;
     QSignalMapper *signalMapper;
     QPushButton *shortcutButtons[NUMBER_OF_BUTTONS], *playButton;
-    QGridLayout *mainLayout, *buttonsLayout, *textLayout, *speechLayout, *visionLayout, *moveLayout;
+    QGridLayout *mainLayout, *buttonsLayout, *textLayout, *speechLayout, *visionLayout, *moveLayout, *moveTalkLayout;
     QProcess *speakProcess;
-    QLabel *speechName, *visionName, *moveName;
+    QLabel *speechName, *visionName, *moveName, *moveTalkName;
     QPlainTextEdit *textEntry;
     
     QComboBox *camId;
@@ -56,6 +57,10 @@ private:
     
     QPushButton *leftTurnButton, *rightTurnButton, *upTurnButton, *downTurnButton;
     QSerialPort *serialPort;
+    QTimer *yesTimer, *noTimer;
+    
+    int yesCount, noCount;
+    QPushButton *yesButton, *noButton;
     
 private slots:
   void playStandardMessages(QString message);
@@ -67,6 +72,10 @@ private slots:
   void rightTurnButtonSlot();
   void upTurnButtonSlot();
   void downTurnButtonSlot();
+  void yesSlot();
+  void noSlot();
+  void yesButtonSlot();
+  void noButtonSlot();
 };
 
 #endif //

@@ -11,6 +11,7 @@ RobotSensesControl::RobotSensesControl()
     speechLayout = new QGridLayout();
     visionLayout = new QGridLayout();
     moveLayout = new QGridLayout();
+    moveTalkLayout = new QGridLayout();
     
     signalMapper = new QSignalMapper();
         
@@ -56,7 +57,12 @@ RobotSensesControl::RobotSensesControl()
     upTurnButton = new QPushButton("Up");
     downTurnButton = new QPushButton("Down");
     moveName = new QLabel("Robot Move");
-    //serialPort = new QSerialPort();
+
+    yesTimer = new QTimer();
+    noTimer = new QTimer();
+    yesButton = new QPushButton("Say yes and nod");
+    noButton = new QPushButton("Say no");
+    moveTalkName = new QLabel("Robot Move and talk");
     
     //Initialization
     mainLayout->addWidget(speechName, 0, 0);
@@ -64,6 +70,7 @@ RobotSensesControl::RobotSensesControl()
     mainLayout->addWidget(visionName, 2, 0);
     mainLayout->addLayout(visionLayout, 3, 0);
     mainLayout->addLayout(moveLayout, 4, 0);
+    mainLayout->addLayout(moveTalkLayout, 5, 0);
     
     speechLayout->addLayout(buttonsLayout, 1, 0);
     speechLayout->addWidget(textEntry, 2, 0);
@@ -87,10 +94,11 @@ RobotSensesControl::RobotSensesControl()
     visionLayout->addWidget(captureImageLabel, 1, 0);
     visionLayout->addWidget(captureButton, 1, 1);
     visionLayout->addWidget(stopCaptureButton, 1, 2);
+    
+    moveTalkLayout->addWidget(moveTalkName, 0, 0);
+    moveTalkLayout->addWidget(yesButton, 1, 0);
+    moveTalkLayout->addWidget(noButton, 2, 0);
         
-    
-    //playButton->setFixedSize(QSize(0.96*x_window, 0.1*y_window));
-    
     speechName->setAlignment(Qt::AlignCenter);
     QFont f("Arial",16);
     QFontMetrics fm(f);
@@ -103,8 +111,13 @@ RobotSensesControl::RobotSensesControl()
     
     moveName->setAlignment(Qt::AlignCenter);
     QFont fvm("Arial",16);
-    QFontMetrics fmvm(fv);
+    QFontMetrics fmvm(fvm);
     moveName->setFont(fvm);
+    
+    moveTalkName->setAlignment(Qt::AlignCenter);
+    QFont fvmt("Arial",16);
+    QFontMetrics fmvmt(fvmt);
+    moveTalkName->setFont(fvmt);
     
     window->setLayout(mainLayout);
     setCentralWidget(window);
@@ -112,6 +125,9 @@ RobotSensesControl::RobotSensesControl()
     setWindowTitle("Robot Senses Control");
     
     speechProcessName = "espeak";
+    
+    yesCount = 0;
+    noCount = 0;
     
     int camCont = 0;
     QDirIterator it("/dev", QDirIterator::NoIteratorFlags);
@@ -148,6 +164,11 @@ RobotSensesControl::RobotSensesControl()
     connect(rightTurnButton, SIGNAL(clicked()), this, SLOT(rightTurnButtonSlot()));
     connect(upTurnButton, SIGNAL(clicked()), this, SLOT(upTurnButtonSlot()));
     connect(downTurnButton, SIGNAL(clicked()), this, SLOT(downTurnButtonSlot()));
+    connect(yesTimer, SIGNAL(timeout()), this, SLOT(yesSlot()));
+    connect(noTimer, SIGNAL(timeout()), this, SLOT(noSlot()));
+    connect(yesButton, SIGNAL(clicked()), this, SLOT(yesButtonSlot()));
+    connect(noButton, SIGNAL(clicked()), this, SLOT(noButtonSlot()));
+    
     openSerialPort();
 }
 
@@ -267,6 +288,82 @@ void RobotSensesControl::downTurnButtonSlot()
 {
     //50
     char message = 2;
-  sendSerialMessage(message);
+    sendSerialMessage(message);
   //cout << "Entro" << endl;
+}
+
+void RobotSensesControl::yesSlot()
+{
+    if(yesCount < 2)
+    {
+	char message = 1;
+	sendSerialMessage(message);
+    }
+    else if(yesCount > 1 && yesCount < 6)
+    {
+	char message = 2;
+	sendSerialMessage(message);
+    }
+    else if(yesCount > 5)
+    {
+	char message = 1;
+	sendSerialMessage(message);
+    }
+        
+    if(yesCount == 8)
+    {
+	yesCount = 0;
+	yesTimer->stop();
+    }
+    else
+    {
+	yesCount++;
+    }
+    //cout << "Entra " << yesCount << endl;
+}
+
+void RobotSensesControl::noSlot()
+{
+    if(noCount < 2)
+    {
+	char message = 1;
+	sendSerialMessage(message);
+    }
+    else if(noCount > 1 && noCount < 6)
+    {
+	char message = 2;
+	sendSerialMessage(message);
+    }
+    else if(noCount > 5)
+    {
+	char message = 1;
+	sendSerialMessage(message);
+    }
+        
+    if(noCount == 8)
+    {
+	noCount = 0;
+	noTimer->stop();
+    }
+    else
+    {
+	noCount++;
+    }
+    //cout << "Entra" << endl;
+}
+
+void RobotSensesControl::yesButtonSlot()
+{
+    yesTimer->start(100);
+    QStringList arguments;
+    arguments << "-a" << "200" << "-s" << "190" << "-ves-la" << "si";
+    speakProcess->start(speechProcessName, arguments);
+}
+
+void RobotSensesControl::noButtonSlot()
+{
+    noTimer->start(100);
+    QStringList arguments;
+    arguments << "-a" << "200" << "-s" << "190" << "-ves-la" << "no";
+    speakProcess->start(speechProcessName, arguments);
 }
