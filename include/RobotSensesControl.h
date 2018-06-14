@@ -20,6 +20,8 @@
 #include "WorkerThread.h"
 #include <QComboBox>
 #include <QDirIterator>
+#include <QtSerialPort/QSerialPort>
+#include <QMessageBox>
 
 #define NUMBER_OF_BUTTONS 12
 
@@ -32,14 +34,16 @@ class RobotSensesControl : public QMainWindow
 public:
     RobotSensesControl();
     virtual ~RobotSensesControl();
+    void openSerialPort();
+    void sendSerialMessage(char instruction);
     
 private:
     QString buttonTexts[NUMBER_OF_BUTTONS], speechProcessName;
     QSignalMapper *signalMapper;
     QPushButton *shortcutButtons[NUMBER_OF_BUTTONS], *playButton;
-    QGridLayout *mainLayout, *buttonsLayout, *textLayout, *speechLayout, *visionLayout;
+    QGridLayout *mainLayout, *buttonsLayout, *textLayout, *speechLayout, *visionLayout, *moveLayout;
     QProcess *speakProcess;
-    QLabel *speechName, *visionName;
+    QLabel *speechName, *visionName, *moveName;
     QPlainTextEdit *textEntry;
     
     QComboBox *camId;
@@ -50,12 +54,19 @@ private:
     QPushButton *startSerialConnection;
     QPushButton *stopSerialConnection;
     
+    QPushButton *leftTurnButton, *rightTurnButton, *upTurnButton, *downTurnButton;
+    QSerialPort *serialPort;
+    
 private slots:
   void playStandardMessages(QString message);
   void processEnded(int exitCode, QProcess::ExitStatus existStatus);
   void playButtonSlot();
   void captureImage();
   void stopCapturingImage();
+  void leftTurnButtonSlot();
+  void rightTurnButtonSlot();
+  void upTurnButtonSlot();
+  void downTurnButtonSlot();
 };
 
 #endif //

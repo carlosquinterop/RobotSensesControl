@@ -10,6 +10,7 @@ RobotSensesControl::RobotSensesControl()
     buttonsLayout = new QGridLayout();    
     speechLayout = new QGridLayout();
     visionLayout = new QGridLayout();
+    moveLayout = new QGridLayout();
     
     signalMapper = new QSignalMapper();
         
@@ -46,19 +47,34 @@ RobotSensesControl::RobotSensesControl()
     stopCaptureButton->setEnabled(false);
     camId = new QComboBox();
     captureImageLabel = new QLabel("Capture image from camera");
-    visionName = new QLabel("Vision Speech");
+    visionName = new QLabel("Robot Vision");
     visionThread = new WorkerThread();
+    
+    
+    leftTurnButton = new QPushButton("Left");
+    rightTurnButton = new QPushButton("Right");
+    upTurnButton = new QPushButton("Up");
+    downTurnButton = new QPushButton("Down");
+    moveName = new QLabel("Robot Move");
+    //serialPort = new QSerialPort();
     
     //Initialization
     mainLayout->addWidget(speechName, 0, 0);
     mainLayout->addLayout(speechLayout, 1, 0);
     mainLayout->addWidget(visionName, 2, 0);
     mainLayout->addLayout(visionLayout, 3, 0);
+    mainLayout->addLayout(moveLayout, 4, 0);
     
     speechLayout->addLayout(buttonsLayout, 1, 0);
     speechLayout->addWidget(textEntry, 2, 0);
     speechLayout->addWidget(playButton, 3, 0);
         
+    moveLayout->addWidget(moveName, 0, 1);
+    moveLayout->addWidget(leftTurnButton, 2, 0);
+    moveLayout->addWidget(rightTurnButton, 2, 2);
+    moveLayout->addWidget(upTurnButton, 1, 1);
+    moveLayout->addWidget(downTurnButton, 3, 1);
+    
     int row = 0, col = 0;
     for (int i = 0;i <4;i++)
     {
@@ -84,6 +100,11 @@ RobotSensesControl::RobotSensesControl()
     QFont fv("Arial",16);
     QFontMetrics fmv(fv);
     visionName->setFont(fv);
+    
+    moveName->setAlignment(Qt::AlignCenter);
+    QFont fvm("Arial",16);
+    QFontMetrics fmvm(fv);
+    moveName->setFont(fvm);
     
     window->setLayout(mainLayout);
     setCentralWidget(window);
@@ -122,6 +143,12 @@ RobotSensesControl::RobotSensesControl()
     connect(playButton, SIGNAL(clicked()), this, SLOT(playButtonSlot()));
     connect(captureButton, SIGNAL(clicked()), this, SLOT(captureImage()));
     connect(stopCaptureButton, SIGNAL(clicked()), this, SLOT(stopCapturingImage()));
+    
+    connect(leftTurnButton, SIGNAL(clicked()), this, SLOT(leftTurnButtonSlot()));
+    connect(rightTurnButton, SIGNAL(clicked()), this, SLOT(rightTurnButtonSlot()));
+    connect(upTurnButton, SIGNAL(clicked()), this, SLOT(upTurnButtonSlot()));
+    connect(downTurnButton, SIGNAL(clicked()), this, SLOT(downTurnButtonSlot()));
+    openSerialPort();
 }
 
 RobotSensesControl::~RobotSensesControl()
@@ -179,4 +206,67 @@ void RobotSensesControl::stopCapturingImage()
     /*serialConnectionAllowed = false;
     if (serialConnected)
 	closeSerialPort();*/
+}
+
+void RobotSensesControl::openSerialPort()
+{
+    serialPort = new QSerialPort();
+    serialPort->setPortName("ttyACM0");//For Arduino
+    serialPort->setBaudRate(QSerialPort::Baud115200);
+    serialPort->setDataBits(QSerialPort::Data8);
+    serialPort->setParity(QSerialPort::NoParity);
+    serialPort->setStopBits(QSerialPort::OneStop);
+    serialPort->setFlowControl(QSerialPort::NoFlowControl);
+    
+    if(serialPort->open(QIODevice::ReadWrite)) 
+    {
+	//stopSerialConnection->setEnabled(true);
+	//startSerialConnection->setEnabled(false);
+    } 
+    else 
+    {
+	QMessageBox msgBox;
+	msgBox.setText(QString("Error openning ttyUSB0"));
+	msgBox.setIcon(QMessageBox::Critical);
+	msgBox.exec();
+    }
+}
+
+void RobotSensesControl::sendSerialMessage(char instruction)
+{
+    const char* data = &instruction;
+    if(serialPort->isOpen())
+	    serialPort->write(data);
+}
+
+void RobotSensesControl::leftTurnButtonSlot()
+{
+    //56
+  char message = 8;
+  sendSerialMessage(message);
+  //cout << "Entro" << endl;
+}
+
+void RobotSensesControl::rightTurnButtonSlot()
+{
+    //52
+  char message = 4;
+  sendSerialMessage(message);
+  //cout << "Entro" << endl;
+}
+
+void RobotSensesControl::upTurnButtonSlot()
+{
+    //49
+  char message = 1;
+  sendSerialMessage(message);
+  //cout << "Entro" << endl;
+}
+
+void RobotSensesControl::downTurnButtonSlot()
+{
+    //50
+    char message = 2;
+  sendSerialMessage(message);
+  //cout << "Entro" << endl;
 }

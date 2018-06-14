@@ -21,6 +21,10 @@ find_package(Qt5Gui)
 include_directories(${Qt5Gui_INCLUDES})
 list(APPEND libs ${Qt5Gui_LIBRARIES})
 
+find_package(Qt5SerialPort)
+include_directories(${Qt5SerialPort_INCLUDES})
+list(APPEND libs ${Qt5SerialPort_LIBRARIES})
+
 find_package(Qt5Core)
 include_directories(${Qt5Core_INCLUDES})
 list(APPEND libs ${Qt5Core_LIBRARIES})
