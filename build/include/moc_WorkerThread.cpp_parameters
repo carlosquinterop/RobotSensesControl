@@ -1,8 +1,0 @@
--I/usr/local/include
--I/usr/local/include/opencv
--I/home/carlosq/projects/RobotSensesControl
--I/home/carlosq/projects/RobotSensesControl
--I/home/carlosq/projects/RobotSensesControl/build
--o
-/home/carlosq/projects/RobotSensesControl/build/include/moc_WorkerThread.cpp
-/home/carlosq/projects/RobotSensesControl/include/WorkerThread.h
